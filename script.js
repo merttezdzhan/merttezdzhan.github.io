@@ -36,27 +36,68 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Gallery Generation
+    const imageNames = [
+        '01.webp', '02.webp', '03.webp', '04.webp', '05.webp', 
+        '06.webp', '07.webp', '08.jpg', '09.jpg', '10.jpg', 
+        '11.webp', '12.webp', '13.png', '14.jpg', '15.jpg', 
+        '16.jpg', '17.jpg', '18.jpg', '19.jpg', '20.jpg'
+    ];
+    const baseUrl = 'https://raw.githubusercontent.com/merttezdzhan/mertphotography.github.io/main/';
+    const portfolioGrid = document.getElementById('portfolio-grid');
+
+    if (portfolioGrid) {
+        portfolioGrid.innerHTML = imageNames.map((img, index) => `
+            <div class="portfolio-item" data-index="${index}">
+                <img src="${baseUrl}${img}" alt="Galeri Fotoğrafı ${index + 1}" loading="lazy">
+                <div class="portfolio-overlay">
+                    <i class="ph ph-magnifying-glass-plus"></i>
+                </div>
+            </div>
+        `).join('');
+    }
+
     // Lightbox Functionality
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
     const closeLightbox = document.querySelector('.close-lightbox');
-    const portfolioItems = document.querySelectorAll('.portfolio-item');
+    const btnPrev = document.querySelector('.lightbox-prev');
+    const btnNext = document.querySelector('.lightbox-next');
+    let currentImageIndex = 0;
 
-    portfolioItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const imgSrc = item.querySelector('img').src;
-            lightboxImg.src = imgSrc;
-            lightbox.style.display = 'block';
-            document.body.style.overflow = 'hidden'; // Prevent scrolling
-        });
+    const openLightbox = (index) => {
+        currentImageIndex = index;
+        lightboxImg.src = `${baseUrl}${imageNames[currentImageIndex]}`;
+        lightbox.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    };
+
+    portfolioGrid.addEventListener('click', (e) => {
+        const item = e.target.closest('.portfolio-item');
+        if (item) {
+            const index = parseInt(item.getAttribute('data-index'));
+            openLightbox(index);
+        }
     });
 
-    function closeLightboxModal() {
+    const closeLightboxModal = () => {
         lightbox.style.display = 'none';
-        document.body.style.overflow = 'auto'; // Enable scrolling
-    }
+        document.body.style.overflow = 'auto';
+    };
+
+    const showNext = () => {
+        currentImageIndex = (currentImageIndex + 1) % imageNames.length;
+        lightboxImg.src = `${baseUrl}${imageNames[currentImageIndex]}`;
+    };
+
+    const showPrev = () => {
+        currentImageIndex = (currentImageIndex - 1 + imageNames.length) % imageNames.length;
+        lightboxImg.src = `${baseUrl}${imageNames[currentImageIndex]}`;
+    };
 
     closeLightbox.addEventListener('click', closeLightboxModal);
+    btnNext.addEventListener('click', showNext);
+    btnPrev.addEventListener('click', showPrev);
 
     lightbox.addEventListener('click', (e) => {
         if (e.target === lightbox) {
@@ -65,8 +106,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && lightbox.style.display === 'block') {
-            closeLightboxModal();
+        if (lightbox.style.display === 'block') {
+            if (e.key === 'Escape') closeLightboxModal();
+            if (e.key === 'ArrowRight') showNext();
+            if (e.key === 'ArrowLeft') showPrev();
         }
     });
 
